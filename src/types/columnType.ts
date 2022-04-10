@@ -1,6 +1,6 @@
-import type {CardType} from "./card";
 export interface ColumnType {
+    id: string;
     name: string;
     order: number
-    cards?: CardType[]
+    taskIds: string[] | []
 }

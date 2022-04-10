@@ -1,109 +1,123 @@
-import React, {useEffect, useState} from 'react';
-
-import type {ColumnType} from "../types/columnType";
-import type {CardType} from "../types/card";
-
+import React, {useContext} from 'react';
+import {store} from "../data/DataProvider";
+import {DragDropContext, Droppable, DropResult} from 'react-beautiful-dnd';
 import Column from './base/Column';
-import { faker } from '@faker-js/faker';
-import {Simulate} from "react-dom/test-utils";
-import drag = Simulate.drag;
-
-const generateFakeCards = (howMany:number):CardType[] => {
-    // faker.setLocale('ko');
-
-    const cards = []
-    for (let i = 0; i < howMany; i++) {
-        cards.push({
-            'name': `${faker.name.jobTitle()} ${faker.name.firstName()} ${faker.name.lastName()}`,
-            'description': faker.finance.accountName(),
-            'createdDate': faker.date.past(1).getDate(),
-            'status': Math.random() < 0.5 ? 'open' : 'closed', // faker boolean is deprecated
-            'order': i
-        } as unknown as CardType);
-    }
-    return cards;
-}
+// import BoardSelector from "./layout/Top/BoardSelector";
 
 const Board = () => {
 
-    useEffect(()=>{
-        const draggables = document.querySelectorAll('.draggable')
-        const containers = document.querySelectorAll('.drop-target')
+    const {state:board,dispatch} = useContext(store);
 
-        draggables.forEach(draggable => {
-            draggable.addEventListener('dragstart', (e) => {
-                console.log(e.dataTransfer);
-                draggable.classList.add('opacity-30')
-                draggable.classList.add('dragging');
-                draggable.classList.add('border-2');
-                draggable.classList.add('border-dashed')
-                draggable.classList.add('border-sky-500');
-                draggable.classList.add('border-dashed')
-            })
+    const onDragEnd = (result: DropResult) => {
+        let newState = null;
 
-            draggable.addEventListener('ondrag', (e) => {
-                // console.log(e);
-                draggable.classList.remove('dragging')
-            })
-        })
+        const {destination, source, draggableId, type} = result;
 
-        containers.forEach(container => {
-            container.addEventListener('dragover', e => {
-                e.preventDefault()
-                const afterElement = getDragAfterElement(container, e.clientY)
-                const draggable = document.querySelector('.dragging')
-                if (afterElement == null) {
-                    container.appendChild(draggable)
-                } else {
-                    container.insertBefore(draggable, afterElement)
-                }
-            })
-            container.addEventListener('drop', e=> {
-                console.log('drop', e);
-            });
-        })
-
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')]
-
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect()
-                const offset = y - box.top - box.height / 2
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child }
-                } else {
-                    return closest
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element
+        if (!destination) {
+            return;
         }
-    }, [])
-    const [columns, setColumns]  = useState(
-        [
-            {
-                name: 'one',
-                order: 1,
-                cards: generateFakeCards(5)
-            },
-            {
-                name: 'two',
-                order: 2,
-                cards: generateFakeCards(3)
-            },
-            {
-                name: 'three',
-                order: 3,
-                cards: generateFakeCards(0)
+
+        if (destination.droppableId === source.droppableId && destination.index === source.index) {
+            return;
+        }
+
+        if (type === 'column') {
+            const newColumnOrder = Array.from(board.colOrder);
+            newColumnOrder.splice(source.index, 1);
+            newColumnOrder.splice(destination.index, 0, draggableId);
+
+            newState = {
+                ...board,
+                'colOrder': newColumnOrder,
+            };
+
+        } else {
+            const sourceColumn = board.columns[source.droppableId];
+            const targetColumn = board.columns[destination.droppableId];
+
+            if (sourceColumn === targetColumn) {
+                const newTaskIds = Array.from(sourceColumn.taskIds);
+                newTaskIds.splice(source.index, 1);
+                newTaskIds.splice(destination.index, 0, draggableId);
+
+                const newColumn = {
+                    ...targetColumn,
+                    'taskIds': newTaskIds,
+                };
+
+                newState = {
+                    ...board,
+                    columns: {
+                        ...board.columns,
+                        [newColumn.id]: newColumn,
+                    },
+                };
+
+            } else {
+                // Moving from one list to another
+                const startTaskIds = Array.from(sourceColumn.taskIds);
+                startTaskIds.splice(source.index, 1);
+                const newStart = {
+                    ...sourceColumn,
+                    taskIds: startTaskIds,
+                };
+
+                const finishTaskIds = Array.from(targetColumn.taskIds);
+                finishTaskIds.splice(destination.index, 0, draggableId);
+                const newFinish = {
+                    ...targetColumn,
+                    taskIds: finishTaskIds,
+                };
+
+                newState = {
+                    ...board,
+                    columns: {
+                        ...board.columns,
+                        [newStart.id]: newStart,
+                        [newFinish.id]: newFinish,
+                    },
+                };
+
             }
-        ] as ColumnType[]
-    )
+        }
+
+        if (newState) {
+            dispatch({type:'save', payload: newState});
+        }
+
+    };
 
     return (
         <div className="flex container">
-            {columns.map((item, index)=>{
-              return <Column header={item.name} footer={'Footer'} cards={item.cards} key={index} handleColumns={setColumns}>
-                    <span>{item.name}</span>
-                </Column>
-            })}
+            <DragDropContext
+                onDragEnd={onDragEnd}
+            >
+                <Droppable droppableId="all-columns" direction="horizontal" type="column">
+                    {(provided) =>
+                        <div
+                            className="px-4 py-5 sm:p-6 flex flex-grow"
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                        >
+
+                            {board.colOrder.map((columnId, index) => {
+                                const column = board.columns[columnId];
+                                const tasks = column.taskIds.map((taskId: string) => {
+                                    // @ts-ignore
+                                    return board.tasks[taskId];
+                                });
+
+                                return <Column header={column.name} footer={'Footer'} cards={tasks} key={columnId}
+                                               columnId={columnId} index={index}>
+
+                                </Column>
+                            })}
+
+                    {provided.placeholder}
+                        </div>
+                    }
+                </Droppable>
+            </DragDropContext>
         </div>
     );
 };
