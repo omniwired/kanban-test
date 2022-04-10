@@ -14,8 +14,8 @@ const translationDictionary = {
         confirm: "Are you sure?"
     },
     'es': {
-        addColumn: 'Agregar Columna',
-        addCard: 'Agregar Tarjeta',
+        addColumn: 'Mas Columnas',
+        addCard: 'Mas Tarjetas',
         persistenceText: 'Guardar Cambios',
         deleteColumn: 'Sólo las columnas vacias se pueden borrar',
         confirm: "Estas seguro?"
