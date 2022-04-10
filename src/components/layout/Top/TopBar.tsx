@@ -40,7 +40,7 @@ const TopBar = () => {
             <SaveToggle/>
             <button className="flex w-40 justify-evenly border-2 rounded-md border-gray-600 p-2 bg-white"
                     onClick={() => addColumn(board, dispatch)}>
-                {board?.language?.strings.addCard || 'Add column'}
+                {board?.language?.strings.addColumn || 'Add column'}
                 <ViewGridAddIcon className="h-5 w-5 text-red-500 self-center"/>
             </button>
         </div>
