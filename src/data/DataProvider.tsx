@@ -5,19 +5,13 @@ import {BoardState} from "../types/BoardStateType";
 import {actionType} from "../types/ActionType";
 import {LanguageType} from "../types/LanguageType";
 
-let loadedData: BoardState;
 // window.localStorage.clear();
-if (window.localStorage.getItem('terra-test')) {
-    // @ts-ignore
-    loadedData = JSON.parse(window.localStorage.getItem('terra-test'));
-} else {
-    loadedData = initialData;
-}
+// @ts-ignore
+const loadedData = window.localStorage.getItem('terra-test') ? JSON.parse(window.localStorage.getItem('terra-test')) : initialData;
 
 const store = createContext<{
     state: BoardState,
     dispatch: Dispatch<actionType>
-    // @ts-ignore
 }>(loadedData);
 
 
@@ -46,16 +40,24 @@ const DataProvider: FC<{ children?: React.ReactNode }> = ({children}) => {
                 }
                 break;
             case 'add-card':
-                // @ts-ignore
-                const card = generateFakeCards(1, state.language.code);
+                const card = generateFakeCards(1, state?.language?.code);
                 const cardId = Object.keys(card);
-                state.tasks = {
+
+                return {
+                    ...state,
+                    tasks: {
                     ...state.tasks,
                     ...card
+                    },
+                    columns: {
+                        ...state.columns,
+                        [action.id as string]: {
+                            ...state.columns[action.id as string],
+                            // @ts-ignore
+                            taskIds: [...state.columns[action.id]["taskIds"], cardId]
+                        }
+                    }
                 };
-                // @ts-ignore
-                state.columns[action.id].taskIds.push(cardId);
-                break;
             case 'tasks':
                 // @ts-ignore
                 state.tasks[action.id][action.field] = action.value;
