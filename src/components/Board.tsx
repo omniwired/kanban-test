@@ -9,6 +9,13 @@ const Board = () => {
     const {state:board,dispatch} = useContext(store);
 
     const onDragEnd = (result: DropResult) => {
+        /**
+         * I know this will be better handled in the reducer at
+         * DataProvider.
+         * But in the interest of time and to make more clear what is
+         * going on in a single place. I opt to make it this way.
+         * Please ask me about it if necessary.
+         */
         let newState = null;
 
         const {destination, source, draggableId, type} = result;
