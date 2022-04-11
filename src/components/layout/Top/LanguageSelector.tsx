@@ -78,19 +78,19 @@ export default function LanguageSelector() {
                                 >
                                     {({selected}) => (
                                         <>
-                      <span
-                          className={`block truncate ${
-                              selected ? 'font-medium' : 'font-normal'
-                          }`}
-                      >
-                        {language.name}
-                      </span>
-                                            {selected ? (
+                                          <span
+                                              className={`block truncate ${
+                                                  selected ? 'font-medium' : 'font-normal'
+                                              }`}
+                                          >
+                                            {language.name}
+                                          </span>
+                                            {selected && (
                                                 <span
                                                     className="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600">
                           <CheckIcon className="w-5 h-5" aria-hidden="true"/>
                         </span>
-                                            ) : null}
+                                            )}
                                         </>
                                     )}
                                 </Listbox.Option>
