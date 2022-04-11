@@ -7,7 +7,7 @@ import {LockOpenIcon, LockClosedIcon} from "@heroicons/react/solid";
 
 const Header: FC<{ children?: React.ReactNode }> = ({children}) =>
     (
-        <div className="px-4 py-1 sm:px-6" onClick={() => console.log(1)}>
+        <div className="px-4 py-1 sm:px-6">
             {children}
         </div>
     )
@@ -25,7 +25,9 @@ interface Props {
 
 const Card: FC<Props> = ({task, index}) => {
     const {dispatch} = useContext(store);
-
+    // const dispatch = (e) => {
+    //   console.log(e);
+    // }
     return (
         <Draggable
             key={task.id}
