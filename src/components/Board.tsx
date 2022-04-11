@@ -102,6 +102,10 @@ const Board = () => {
 
                             {board.colOrder.map((columnId, index) => {
                                 const column = board.columns[columnId];
+
+                                if (column.taskIds.map === undefined) {
+                                    column.taskIds = [];
+                                }
                                 const tasks = column.taskIds.map((taskId: string) => {
                                     // @ts-ignore
                                     return board.tasks[taskId];
