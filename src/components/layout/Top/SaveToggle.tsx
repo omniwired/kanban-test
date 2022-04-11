@@ -5,7 +5,11 @@ import {store} from "../../../data/DataProvider";
 function SaveToggle() {
 
     const {state, dispatch} = useContext(store);
-    const [enabled, setEnabled] = useState(state.persistTasks)
+    const [enabled, setEnabled] = useState<boolean>(false)
+
+    useEffect(()=>{
+        setEnabled(state.persistTasks);
+    }, [])
 
     useEffect(() => {
         dispatch({type: 'persist', value: enabled})
