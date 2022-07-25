@@ -1,3 +1,5 @@
+# This was a take home requested by a blockchain company [Terra-money](https://github.com/terra-money/screening-test-frontend).
+I'm keeping it here for historical reasons.
 
 ## Project Overview
 This project implements Kanban Board as a front-end web app like GitHub's Projects feature. Kanban board has several columns, and there are several cards in each column.
